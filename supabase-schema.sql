@@ -97,7 +97,7 @@ create table if not exists partners (
   name text not null,
   email text unique not null,
   partner_code text unique not null,
-  commission_rate numeric(5,2) default 20,
+  commission_rate numeric(5,2) default 35,
   created_at timestamptz default now()
 );
 

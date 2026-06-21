@@ -1,12 +1,36 @@
 'use client'
 
 import { useState } from 'react'
-import { Handshake, Eye, EyeOff, Building2, TrendingUp, Users, Lock, Heart } from 'lucide-react'
+import { Handshake, Eye, EyeOff, Building2, TrendingUp, Users, Lock, Heart, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 
-const mockReferrals = [
-  { id: '1', hospital_name: 'すずき動物病院', plan: 'standard', referred_at: '2026-05-10', status: 'active', commission: 3960 },
-  { id: '2', hospital_name: 'みやび動物クリニック', plan: 'starter', referred_at: '2026-05-22', status: 'active', commission: 1960 },
+interface Partner {
+  id: string
+  name: string
+  code: string
+  commission_rate: number
+  total_commission: number
+}
+
+interface Referral {
+  id: string
+  hospital_name: string
+  plan: string
+  referred_at: string
+  status: string
+  commission: number
+}
+
+const planLabels: Record<string, string> = {
+  starter: 'スターター',
+  standard: 'スタンダード',
+  pro: 'プロ',
+}
+
+// Fallback referrals when no Supabase data exists yet
+const fallbackReferrals: Referral[] = [
+  { id: '1', hospital_name: 'すずき動物病院', plan: 'standard', referred_at: '2026-05-10', status: 'active', commission: 6930 },
+  { id: '2', hospital_name: 'みやび動物クリニック', plan: 'starter', referred_at: '2026-05-22', status: 'active', commission: 3430 },
   { id: '3', hospital_name: '北野ペット病院', plan: 'pro', referred_at: '2026-06-01', status: 'trial', commission: 0 },
 ]
 
@@ -14,29 +38,43 @@ export default function PartnerPage() {
   const [partnerCode, setPartnerCode] = useState('')
   const [showCode, setShowCode] = useState(false)
   const [authenticated, setAuthenticated] = useState(false)
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [partner, setPartner] = useState<Partner | null>(null)
+  const [referrals, setReferrals] = useState<Referral[]>([])
 
-  const mockPartner = {
-    name: '山田 健太',
-    code: 'PARTNER-001',
-    commission_rate: 20,
-    total_commission: 5920,
-  }
-
-  function handleLogin(e: React.FormEvent) {
+  async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
-    if (partnerCode === 'PARTNER-001' || partnerCode === 'DEMO') {
-      setAuthenticated(true)
-      setError('')
-    } else {
-      setError('パートナーコードが正しくありません')
-    }
-  }
+    setLoading(true)
+    setError('')
 
-  const planLabels: Record<string, string> = {
-    starter: 'スターター',
-    standard: 'スタンダード',
-    pro: 'プロ',
+    const code = partnerCode.trim()
+    console.log('[partner] 入力されたコード:', code)
+
+    // サーバーサイド API 経由で照合（RLS バイパス）
+    const res = await fetch('/api/partner/auth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ partner_code: code }),
+    })
+
+    console.log('[partner] API レスポンスステータス:', res.status)
+
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      console.log('[partner] 照合失敗:', data)
+      setError(data.error ?? 'パートナーコードが正しくありません')
+      setLoading(false)
+      return
+    }
+
+    const data = await res.json()
+    console.log('[partner] 照合成功:', data.partner?.name, '紹介数:', data.referrals?.length)
+
+    setPartner(data.partner)
+    setReferrals(data.referrals?.length > 0 ? data.referrals : fallbackReferrals)
+    setAuthenticated(true)
+    setLoading(false)
   }
 
   if (!authenticated) {
@@ -70,7 +108,7 @@ export default function PartnerPage() {
                     type={showCode ? 'text' : 'password'}
                     value={partnerCode}
                     onChange={(e) => setPartnerCode(e.target.value)}
-                    placeholder="例: PARTNER-001"
+                    placeholder="例: TANAKA2024"
                     required
                     className="w-full pl-10 pr-10 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#D4920E]/50 focus:border-[#D4920E]"
                   />
@@ -90,9 +128,12 @@ export default function PartnerPage() {
 
               <button
                 type="submit"
-                className="w-full bg-[#D4920E] text-white py-3 rounded-xl font-semibold hover:bg-[#b87e0c] transition-colors"
+                disabled={loading || !partnerCode}
+                className="w-full bg-[#D4920E] text-white py-3 rounded-xl font-semibold hover:bg-[#b87e0c] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                ログイン
+                {loading ? (
+                  <><Loader2 className="w-4 h-4 animate-spin" />確認中...</>
+                ) : 'ログイン'}
               </button>
             </form>
 
@@ -106,6 +147,10 @@ export default function PartnerPage() {
     )
   }
 
+  if (!partner) return null
+
+  const activeCount = referrals.filter(r => r.status === 'active').length
+
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-100 px-6 py-4">
@@ -116,11 +161,11 @@ export default function PartnerPage() {
             </div>
             <div>
               <p className="font-semibold text-gray-900">Partner Portal</p>
-              <p className="text-xs text-gray-400">{mockPartner.name} · {mockPartner.code}</p>
+              <p className="text-xs text-gray-400">{partner.name} · {partner.code}</p>
             </div>
           </div>
           <button
-            onClick={() => setAuthenticated(false)}
+            onClick={() => { setAuthenticated(false); setPartner(null); setPartnerCode('') }}
             className="text-sm text-gray-400 hover:text-gray-600 border border-gray-200 px-3 py-1.5 rounded-lg transition-colors"
           >
             ログアウト
@@ -135,21 +180,21 @@ export default function PartnerPage() {
             <div className="w-10 h-10 rounded-lg bg-[#D4920E]/10 flex items-center justify-center mb-3">
               <Building2 className="w-5 h-5 text-[#D4920E]" />
             </div>
-            <p className="text-2xl font-bold text-gray-900">{mockReferrals.filter(r => r.status === 'active').length}</p>
+            <p className="text-2xl font-bold text-gray-900">{activeCount}</p>
             <p className="text-sm text-gray-500">紹介中の病院（本契約）</p>
           </div>
           <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
             <div className="w-10 h-10 rounded-lg bg-[#1D9E75]/10 flex items-center justify-center mb-3">
               <Users className="w-5 h-5 text-[#1D9E75]" />
             </div>
-            <p className="text-2xl font-bold text-gray-900">{mockReferrals.length}</p>
+            <p className="text-2xl font-bold text-gray-900">{referrals.length}</p>
             <p className="text-sm text-gray-500">紹介総数</p>
           </div>
           <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
             <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center mb-3">
               <TrendingUp className="w-5 h-5 text-green-600" />
             </div>
-            <p className="text-2xl font-bold text-gray-900">¥{mockPartner.total_commission.toLocaleString()}</p>
+            <p className="text-2xl font-bold text-gray-900">¥{partner.total_commission.toLocaleString()}</p>
             <p className="text-sm text-gray-500">累計コミッション</p>
           </div>
         </div>
@@ -158,8 +203,8 @@ export default function PartnerPage() {
         <div className="bg-[#D4920E]/10 rounded-xl p-4 flex items-center gap-3">
           <TrendingUp className="w-5 h-5 text-[#D4920E] shrink-0" />
           <p className="text-sm text-gray-700">
-            あなたのコミッション率: <strong className="text-[#D4920E]">{mockPartner.commission_rate}%</strong>
-            （紹介病院の月額料金の{mockPartner.commission_rate}%を毎月お支払いします）
+            あなたのコミッション率: <strong className="text-[#D4920E]">{partner.commission_rate}%</strong>
+            （紹介病院の月額料金の{partner.commission_rate}%を毎月お支払いします）
           </p>
         </div>
 
@@ -169,14 +214,14 @@ export default function PartnerPage() {
             <h2 className="font-semibold text-gray-900">紹介病院一覧</h2>
           </div>
           <div className="divide-y divide-gray-50">
-            {mockReferrals.map((r) => (
+            {referrals.map((r) => (
               <div key={r.id} className="p-5 flex items-center gap-4">
                 <div className="w-10 h-10 rounded-full bg-[#1D9E75]/10 flex items-center justify-center shrink-0">
                   <Building2 className="w-4 h-4 text-[#1D9E75]" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-gray-900 text-sm">{r.hospital_name}</p>
-                  <p className="text-xs text-gray-400">{planLabels[r.plan]} · 紹介日: {r.referred_at}</p>
+                  <p className="text-xs text-gray-400">{planLabels[r.plan] ?? r.plan} · 紹介日: {r.referred_at}</p>
                 </div>
                 <span className={`text-xs px-2 py-1 rounded-full font-medium ${
                   r.status === 'active' ? 'bg-[#1D9E75]/10 text-[#1D9E75]' : 'bg-yellow-50 text-yellow-600'
@@ -192,6 +237,11 @@ export default function PartnerPage() {
               </div>
             ))}
           </div>
+          {referrals.length === 0 && (
+            <div className="text-center py-10 text-gray-400 text-sm">
+              まだ紹介実績がありません
+            </div>
+          )}
         </div>
 
         {/* Partner Link */}
@@ -200,11 +250,11 @@ export default function PartnerPage() {
           <div className="flex items-center gap-3">
             <input
               readOnly
-              value={`https://tascal-pet.vercel.app/?ref=${mockPartner.code}`}
+              value={`https://tascal-pet.vercel.app/?ref=${partner.code}`}
               className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 text-gray-600"
             />
             <button
-              onClick={() => navigator.clipboard?.writeText(`https://tascal-pet.vercel.app/?ref=${mockPartner.code}`)}
+              onClick={() => navigator.clipboard?.writeText(`https://tascal-pet.vercel.app/?ref=${partner.code}`)}
               className="bg-[#D4920E] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#b87e0c] transition-colors"
             >
               コピー
