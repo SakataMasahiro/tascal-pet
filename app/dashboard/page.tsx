@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase'
 import {
   Calendar, Heart, TrendingUp, AlertTriangle, CheckCircle,
-  Clock, ChevronRight
+  Clock, ChevronRight, Star, Zap, ArrowUp, ArrowDown
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -16,9 +16,18 @@ interface StatCard {
   bgColor: string
 }
 
+const LUCKY_MOCK = {
+  score: 65,
+  yesterday: 60,
+  vetNotesCount: 7,
+  gratitudeCount: 4,
+  newPetsCount: 12,
+}
+
 export default function DashboardPage() {
   const [greeting, setGreeting] = useState('')
   const [userName, setUserName] = useState('')
+  const [gaugeVisible, setGaugeVisible] = useState(false)
   const [stats] = useState({
     todayAppointments: 8,
     totalPets: 342,
@@ -52,7 +61,14 @@ export default function DashboardPage() {
         setUserName(data.user.email.split('@')[0])
       }
     })
+
+    const t = setTimeout(() => setGaugeVisible(true), 300)
+    return () => clearTimeout(t)
   }, [])
+
+  const lucky = LUCKY_MOCK
+  const delta = lucky.score - lucky.yesterday
+  const gaugePercent = Math.min(lucky.score, 100)
 
   const statCards: StatCard[] = [
     {
@@ -87,6 +103,63 @@ export default function DashboardPage() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-8">
+      {/* Lucky Index Card */}
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 overflow-hidden">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <div className="w-9 h-9 rounded-full bg-[#D4920E]/10 flex items-center justify-center">
+              <Star className="w-5 h-5 text-[#D4920E] fill-[#D4920E]" />
+            </div>
+            <div>
+              <h2 className="font-bold text-gray-900 text-base">今日の運指数</h2>
+              <p className="text-xs text-gray-400">Lucky Index</p>
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="text-3xl font-bold text-gray-900">{lucky.score}<span className="text-lg text-gray-400 font-normal">/100</span></div>
+            <div className={`flex items-center gap-1 text-sm font-medium justify-end mt-0.5 ${
+              delta >= 0 ? 'text-[#1D9E75]' : 'text-red-500'
+            }`}>
+              {delta >= 0
+                ? <ArrowUp className="w-3.5 h-3.5" />
+                : <ArrowDown className="w-3.5 h-3.5" />
+              }
+              昨日より{delta >= 0 ? '+' : ''}{delta}ポイント
+            </div>
+          </div>
+        </div>
+
+        {/* Gauge */}
+        <div className="relative h-3 bg-gray-100 rounded-full overflow-hidden mb-4">
+          <div
+            className="h-full rounded-full bg-gradient-to-r from-[#1D9E75] to-[#D4920E] transition-all duration-1000 ease-out"
+            style={{ width: gaugeVisible ? `${gaugePercent}%` : '0%' }}
+          />
+        </div>
+
+        {/* Breakdown */}
+        <div className="grid grid-cols-3 gap-3">
+          <div className="bg-[#1D9E75]/5 rounded-xl p-3 text-center">
+            <Zap className="w-4 h-4 text-[#1D9E75] mx-auto mb-1" />
+            <p className="text-xs text-gray-500">気づき記録</p>
+            <p className="font-bold text-gray-900 text-sm">{lucky.vetNotesCount}件</p>
+            <p className="text-xs text-[#1D9E75] font-medium">+{lucky.vetNotesCount * 3}pt</p>
+          </div>
+          <div className="bg-[#D4920E]/5 rounded-xl p-3 text-center">
+            <Star className="w-4 h-4 text-[#D4920E] mx-auto mb-1" />
+            <p className="text-xs text-gray-500">感謝メッセージ</p>
+            <p className="font-bold text-gray-900 text-sm">{lucky.gratitudeCount}件</p>
+            <p className="text-xs text-[#D4920E] font-medium">+{lucky.gratitudeCount * 5}pt</p>
+          </div>
+          <div className="bg-blue-50 rounded-xl p-3 text-center">
+            <Heart className="w-4 h-4 text-blue-500 mx-auto mb-1" />
+            <p className="text-xs text-gray-500">今月の新規患者</p>
+            <p className="font-bold text-gray-900 text-sm">{lucky.newPetsCount}件</p>
+            <p className="text-xs text-blue-500 font-medium">+{lucky.newPetsCount * 2}pt</p>
+          </div>
+        </div>
+      </div>
+
       {/* Greeting */}
       <div className="bg-gradient-to-r from-[#1D9E75] to-[#178a64] rounded-2xl p-6 text-white">
         <p className="text-white/80 text-sm mb-1">{new Date().toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })}</p>

@@ -4,18 +4,21 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  Heart, LayoutDashboard, Calendar, Brain, Users, Settings,
-  LogOut, Menu, X, ChevronRight
+  Home, Heart, LayoutDashboard, Calendar, Brain, Users, Settings,
+  LogOut, Menu, X, ChevronRight, Gift, BookOpen
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 
 const navItems = [
+  { href: '/', label: 'ホーム', icon: Home },
   { href: '/dashboard', label: 'ダッシュボード', icon: LayoutDashboard },
   { href: '/dashboard/pets', label: 'ペットカルテ', icon: Heart },
   { href: '/dashboard/appointments', label: '予約管理', icon: Calendar },
   { href: '/dashboard/ai-assistant', label: 'AIアシスタント', icon: Brain },
   { href: '/dashboard/community', label: 'コミュニティ', icon: Users },
+  { href: '/dashboard/gratitude', label: '感謝の宝箱', icon: Gift },
+  { href: '/dashboard/adversity-timeline', label: '逆境タイムライン', icon: BookOpen },
   { href: '/dashboard/settings', label: '設定', icon: Settings },
 ]
 

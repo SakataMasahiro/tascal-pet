@@ -97,3 +97,46 @@ export interface StaffMember {
   role: string
   created_at: string
 }
+
+export interface LuckyIndexLog {
+  id: string
+  hospital_id: string
+  date: string
+  score: number
+  breakdown: {
+    vet_notes_count?: number
+    gratitude_count?: number
+    new_pets_count?: number
+  }
+  created_at: string
+}
+
+export interface VetNote {
+  id: string
+  hospital_id: string
+  pet_id: string
+  mode: 'breakthrough' | 'steady' | 'concern'
+  content: string
+  created_at: string
+}
+
+export interface GratitudeMessage {
+  id: string
+  hospital_id: string
+  pet_id?: string
+  pet_name?: string
+  owner_name?: string
+  message: string
+  created_at: string
+}
+
+export interface AdversityRecord {
+  id: string
+  hospital_id: string
+  pet_id?: string
+  pet_name?: string
+  content: string
+  recorded_at: string
+  ai_reflection?: string
+  reflection_sent_at?: string
+}

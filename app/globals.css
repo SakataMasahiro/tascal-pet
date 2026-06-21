@@ -47,3 +47,35 @@ body {
 .btn-gold:hover {
   background-color: #b87e0c;
 }
+
+@keyframes star-float {
+  0% { transform: translateY(0) rotate(0deg) scale(1); opacity: 1; }
+  100% { transform: translateY(-120vh) rotate(720deg) scale(0.3); opacity: 0; }
+}
+
+@keyframes lucky-gauge {
+  from { width: 0%; }
+  to { width: var(--gauge-width); }
+}
+
+.star-particle {
+  position: fixed;
+  pointer-events: none;
+  animation: star-float linear forwards;
+  z-index: 9999;
+  font-size: 1.5rem;
+  user-select: none;
+}
+
+.lucky-gauge-bar {
+  animation: lucky-gauge 1s ease-out forwards;
+}
+
+@keyframes celebration-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.celebration-card {
+  animation: celebration-pulse 0.5s ease-in-out 3;
+}

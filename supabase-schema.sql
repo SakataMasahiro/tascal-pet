@@ -121,6 +121,50 @@ create table if not exists staff_members (
   created_at timestamptz default now()
 );
 
+-- Lucky Index Logs
+create table if not exists lucky_index_logs (
+  id uuid default gen_random_uuid() primary key,
+  hospital_id uuid references hospitals(id) on delete cascade not null,
+  date date not null,
+  score int not null default 0,
+  breakdown jsonb default '{}',
+  created_at timestamptz default now(),
+  unique(hospital_id, date)
+);
+
+-- Vet Notes (気づき日誌)
+create table if not exists vet_notes (
+  id uuid default gen_random_uuid() primary key,
+  hospital_id uuid references hospitals(id) on delete cascade not null,
+  pet_id uuid references pets(id) on delete cascade not null,
+  mode text not null check (mode in ('breakthrough', 'steady', 'concern')),
+  content text not null,
+  created_at timestamptz default now()
+);
+
+-- Gratitude Messages (感謝の宝箱)
+create table if not exists gratitude_messages (
+  id uuid default gen_random_uuid() primary key,
+  hospital_id uuid references hospitals(id) on delete cascade not null,
+  pet_id uuid references pets(id) on delete cascade,
+  pet_name text,
+  owner_name text,
+  message text not null,
+  created_at timestamptz default now()
+);
+
+-- Adversity Records (逆境タイムライン)
+create table if not exists adversity_records (
+  id uuid default gen_random_uuid() primary key,
+  hospital_id uuid references hospitals(id) on delete cascade not null,
+  pet_id uuid references pets(id) on delete set null,
+  pet_name text,
+  content text not null,
+  recorded_at timestamptz default now(),
+  ai_reflection text,
+  reflection_sent_at timestamptz
+);
+
 -- RLS Policies (enable for all tables)
 alter table hospitals enable row level security;
 alter table pets enable row level security;
