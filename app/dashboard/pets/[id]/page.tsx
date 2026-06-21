@@ -456,7 +456,7 @@ export default function PetDetailPage({ params }: { params: Promise<{ id: string
                     className="mt-4 inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 border border-gray-200 px-4 py-2 rounded-lg hover:border-gray-300 transition-all"
                   >
                     <BookOpen className="w-4 h-4" />
-                    逆境タイムラインに記録
+                    先生の心の記録に追加
                   </Link>
                 </div>
               ) : (

@@ -75,7 +75,7 @@ export default function AdversityTimelinePage() {
           <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
             <BookOpen className="w-5 h-5" />
           </div>
-          <h1 className="text-2xl font-bold">逆境タイムライン</h1>
+          <h1 className="text-2xl font-bold">先生の心の記録</h1>
         </div>
         <p className="text-white/80 text-sm">
           辛かった経験を記録してください。1年後、AIがその経験の意味を物語として届けます。

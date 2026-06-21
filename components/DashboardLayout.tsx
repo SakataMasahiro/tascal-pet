@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
+import TrialBanner from '@/components/TrialBanner'
 
 const navItems = [
   { href: '/', label: 'ホーム', icon: Home },
@@ -18,7 +19,7 @@ const navItems = [
   { href: '/dashboard/ai-assistant', label: 'AIアシスタント', icon: Brain },
   { href: '/dashboard/community', label: 'コミュニティ', icon: Users },
   { href: '/dashboard/gratitude', label: '感謝の宝箱', icon: Gift },
-  { href: '/dashboard/adversity-timeline', label: '逆境タイムライン', icon: BookOpen },
+  { href: '/dashboard/adversity-timeline', label: '先生の心の記録', icon: BookOpen },
   { href: '/dashboard/settings', label: '設定', icon: Settings },
 ]
 
@@ -118,6 +119,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div className="w-9" />
         </header>
 
+        <TrialBanner />
         <main className="flex-1 p-4 lg:p-8">
           {children}
         </main>

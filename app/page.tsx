@@ -1,9 +1,10 @@
 'use client'
 
 import Link from 'next/link'
+import { useState } from 'react'
 import {
   Heart, Calendar, Brain, Users, Settings, BarChart3,
-  CheckCircle, Star, ArrowRight, Shield, Zap, Clock
+  CheckCircle, Star, ArrowRight, Shield, Zap, Clock, Loader2
 } from 'lucide-react'
 
 const features = [
@@ -42,6 +43,7 @@ const features = [
 const plans = [
   {
     name: 'スターター',
+    planKey: 'starter',
     price: '¥9,800',
     period: '/月',
     description: '小規模クリニック向け',
@@ -57,6 +59,7 @@ const plans = [
   },
   {
     name: 'スタンダード',
+    planKey: 'standard',
     price: '¥19,800',
     period: '/月',
     description: '中規模クリニック向け',
@@ -73,6 +76,7 @@ const plans = [
   },
   {
     name: 'プロ',
+    planKey: 'pro',
     price: '¥29,800',
     period: '/月',
     description: '多院展開・大規模向け',
@@ -112,6 +116,29 @@ const testimonials = [
 ]
 
 export default function HomePage() {
+  const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null)
+
+  async function handleCheckout(planKey: string) {
+    setCheckoutLoading(planKey)
+    try {
+      const res = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan: planKey }),
+      })
+      if (res.status === 401) {
+        window.location.href = `/auth/login?plan=${planKey}`
+        return
+      }
+      const data = await res.json()
+      if (data.url) window.location.href = data.url
+    } catch {
+      window.location.href = `/auth/login?plan=${planKey}`
+    } finally {
+      setCheckoutLoading(null)
+    }
+  }
+
   return (
     <div className="min-h-screen">
       {/* Header */}
@@ -254,12 +281,17 @@ export default function HomePage() {
                     </li>
                   ))}
                 </ul>
-                <Link
-                  href="/auth/login"
-                  className={`w-full block text-center py-3 px-6 rounded-xl font-semibold transition-colors ${plan.btnClass}`}
+                <button
+                  onClick={() => handleCheckout(plan.planKey)}
+                  disabled={checkoutLoading === plan.planKey}
+                  className={`w-full flex items-center justify-center gap-2 py-3 px-6 rounded-xl font-semibold transition-colors ${plan.btnClass} disabled:opacity-70`}
                 >
-                  30日間無料で試す
-                </Link>
+                  {checkoutLoading === plan.planKey ? (
+                    <><Loader2 className="w-4 h-4 animate-spin" />処理中...</>
+                  ) : (
+                    '30日間無料で試す'
+                  )}
+                </button>
               </div>
             ))}
           </div>

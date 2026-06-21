@@ -153,7 +153,7 @@ create table if not exists gratitude_messages (
   created_at timestamptz default now()
 );
 
--- Adversity Records (逆境タイムライン)
+-- Adversity Records (先生の心の記録)
 create table if not exists adversity_records (
   id uuid default gen_random_uuid() primary key,
   hospital_id uuid references hospitals(id) on delete cascade not null,
