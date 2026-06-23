@@ -19,7 +19,7 @@ export default function TrialBanner() {
 
       const { data: hospital } = await supabase
         .from('hospitals')
-        .select('plan, trial_ends_at')
+        .select('plan, created_at')
         .eq('email', user.email)
         .single()
 
@@ -27,19 +27,16 @@ export default function TrialBanner() {
 
       setPlan(hospital.plan)
 
-      if (hospital.trial_ends_at) {
-        const trialEnd = new Date(hospital.trial_ends_at)
-        const now = new Date()
-        const days = Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+      const trialEnd = new Date(hospital.created_at)
+      trialEnd.setDate(trialEnd.getDate() + 30)
+      const now = new Date()
+      const days = Math.ceil((trialEnd.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
 
-        if (days > 0) {
-          setDaysLeft(days)
-          setStatus('trial')
-        } else {
-          setStatus('expired')
-        }
+      if (days > 0) {
+        setDaysLeft(days)
+        setStatus('trial')
       } else {
-        setStatus('hidden')
+        setStatus('expired')
       }
     }
     load()
