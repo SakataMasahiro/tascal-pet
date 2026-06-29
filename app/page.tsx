@@ -6,6 +6,7 @@ import {
   Heart, Calendar, Brain, Users, Settings, BarChart3,
   CheckCircle, Star, ArrowRight, Shield, Zap, Clock, Loader2
 } from 'lucide-react'
+import SalesChatWidget from '@/components/SalesChatWidget'
 
 const features = [
   {
@@ -379,6 +380,7 @@ export default function HomePage() {
           </div>
         </div>
       </footer>
+      <SalesChatWidget />
     </div>
   )
 }

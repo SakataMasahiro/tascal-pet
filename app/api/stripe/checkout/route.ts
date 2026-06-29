@@ -50,8 +50,8 @@ export async function POST(req: NextRequest) {
         plan_type: plan,
         user_email: user.email,
       },
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?checkout=success&plan=${plan}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/#pricing`,
+      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?plan=success`,
+      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/pricing`,
       locale: 'ja',
     })
 

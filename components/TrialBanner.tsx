@@ -2,14 +2,13 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase'
-import { Clock, AlertTriangle, CheckCircle, CreditCard, X } from 'lucide-react'
+import { Clock, AlertTriangle, X } from 'lucide-react'
+import Link from 'next/link'
 
 export default function TrialBanner() {
-  const [status, setStatus] = useState<'loading' | 'trial' | 'expired' | 'active' | 'hidden'>('loading')
+  const [status, setStatus] = useState<'loading' | 'trial' | 'expired' | 'hidden'>('loading')
   const [daysLeft, setDaysLeft] = useState(0)
-  const [plan, setPlan] = useState('')
   const [dismissed, setDismissed] = useState(false)
-  const [checkoutLoading, setCheckoutLoading] = useState(false)
 
   useEffect(() => {
     async function load() {
@@ -24,8 +23,6 @@ export default function TrialBanner() {
         .single()
 
       if (!hospital) { setStatus('hidden'); return }
-
-      setPlan(hospital.plan)
 
       const trialEnd = new Date(hospital.created_at)
       trialEnd.setDate(trialEnd.getDate() + 30)
@@ -42,23 +39,7 @@ export default function TrialBanner() {
     load()
   }, [])
 
-  async function handleCheckout(planType: string) {
-    setCheckoutLoading(true)
-    const res = await fetch('/api/stripe/checkout', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ plan: planType }),
-    })
-    const data = await res.json()
-    if (data.url) {
-      window.location.href = data.url
-    }
-    setCheckoutLoading(false)
-  }
-
   if (status === 'loading' || status === 'hidden' || dismissed) return null
-
-  if (status === 'active') return null
 
   if (status === 'trial') {
     const urgency = daysLeft <= 7
@@ -84,14 +65,12 @@ export default function TrialBanner() {
           </p>
         </div>
         {urgency && (
-          <button
-            onClick={() => handleCheckout(plan || 'starter')}
-            disabled={checkoutLoading}
-            className="shrink-0 bg-[#1D9E75] text-white text-xs font-semibold px-3 py-1.5 rounded-lg hover:bg-[#178a64] transition-colors flex items-center gap-1.5 disabled:opacity-50"
+          <Link
+            href="/pricing"
+            className="shrink-0 bg-[#1D9E75] text-white text-xs font-semibold px-3 py-1.5 rounded-lg hover:bg-[#178a64] transition-colors"
           >
-            <CreditCard className="w-3 h-3" />
-            {checkoutLoading ? '処理中...' : 'プランを選択'}
-          </button>
+            プランを選択
+          </Link>
         )}
         <button
           onClick={() => setDismissed(true)}
@@ -105,33 +84,20 @@ export default function TrialBanner() {
 
   if (status === 'expired') {
     return (
-      <div className="mx-4 mt-4 lg:mx-8 lg:mt-6 rounded-xl border border-red-200 bg-red-50 px-4 py-4">
-        <div className="flex items-start gap-3">
-          <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center shrink-0">
-            <AlertTriangle className="w-4 h-4 text-red-600" />
-          </div>
-          <div className="flex-1">
-            <p className="text-sm font-semibold text-red-800">無料トライアルが終了しました</p>
-            <p className="text-xs text-red-600 mt-0.5">引き続きご利用いただくにはプランをお選びください。</p>
-            <div className="flex flex-wrap gap-2 mt-3">
-              {[
-                { key: 'starter', label: 'スターター ¥9,800/月' },
-                { key: 'standard', label: 'スタンダード ¥19,800/月' },
-                { key: 'pro', label: 'プロ ¥29,800/月' },
-              ].map(p => (
-                <button
-                  key={p.key}
-                  onClick={() => handleCheckout(p.key)}
-                  disabled={checkoutLoading}
-                  className="text-xs font-medium bg-white border border-red-200 text-red-700 px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors flex items-center gap-1.5 disabled:opacity-50"
-                >
-                  <CheckCircle className="w-3 h-3" />
-                  {p.label}
-                </button>
-              ))}
-            </div>
-          </div>
+      <div className="mx-4 mt-4 lg:mx-8 lg:mt-6 rounded-xl border border-red-200 bg-red-50 px-4 py-4 flex items-center gap-3">
+        <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+          <AlertTriangle className="w-4 h-4 text-red-600" />
         </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold text-red-800">無料トライアルが終了しました</p>
+          <p className="text-xs text-red-600 mt-0.5">引き続きご利用いただくにはプランをお選びください。</p>
+        </div>
+        <Link
+          href="/pricing"
+          className="shrink-0 bg-red-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg hover:bg-red-700 transition-colors"
+        >
+          プランを選択
+        </Link>
       </div>
     )
   }

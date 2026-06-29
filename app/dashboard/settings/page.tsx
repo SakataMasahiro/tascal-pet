@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import {
-  Settings, Building2, MessageSquare, CreditCard, Users,
+  Settings, Building2, MessageSquare, Users,
   Save, CheckCircle, AlertCircle, Plus, Trash2
 } from 'lucide-react'
 
@@ -12,7 +12,7 @@ const mockStaff = [
   { id: '3', name: '鈴木 太郎', email: 'suzuki@clinic.com', role: '動物看護師' },
 ]
 
-type SettingsTab = 'hospital' | 'line' | 'stripe' | 'staff'
+type SettingsTab = 'hospital' | 'line' | 'staff'
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<SettingsTab>('hospital')
@@ -33,7 +33,6 @@ export default function SettingsPage() {
   const tabs = [
     { key: 'hospital', label: '病院情報', icon: Building2 },
     { key: 'line', label: 'LINE連携', icon: MessageSquare },
-    { key: 'stripe', label: 'Stripe連携', icon: CreditCard },
     { key: 'staff', label: 'スタッフ管理', icon: Users },
   ] as const
 
@@ -154,41 +153,6 @@ export default function SettingsPage() {
               <AlertCircle className="w-4 h-4 text-yellow-600 shrink-0 mt-0.5" />
               <p className="text-xs text-yellow-700">
                 LINE Developersでビジネスアカウントを作成し、MessagingAPIのChannel Access TokenとChannel Secretを取得してください。
-              </p>
-            </div>
-          </div>
-          <button onClick={handleSave} className="mt-5 flex items-center gap-2 bg-[#1D9E75] text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-[#178a64] transition-colors">
-            <Save className="w-4 h-4" />
-            保存する
-          </button>
-        </div>
-      )}
-
-      {activeTab === 'stripe' && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <h2 className="font-semibold text-gray-900 mb-2">Stripe連携</h2>
-          <p className="text-sm text-gray-500 mb-5">Stripeと連携してオンライン決済・請求書発行が可能になります。</p>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Publishable Key</label>
-              <input
-                type="password"
-                placeholder="pk_live_..."
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1D9E75]/50"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Secret Key</label>
-              <input
-                type="password"
-                placeholder="sk_live_..."
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1D9E75]/50"
-              />
-            </div>
-            <div className="bg-blue-50 rounded-lg p-4 flex gap-3">
-              <AlertCircle className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
-              <p className="text-xs text-blue-700">
-                現在のプランでは自動課金は行いません。トライアル終了後のプラン更新時のみ課金が発生します。
               </p>
             </div>
           </div>
